@@ -155,3 +155,56 @@ pub fn rules_finance(b: &mut RuleSetBuilder<Dimension>) -> RustlingResult<()> {
              });
     Ok(())
 }
+
+pub fn rules_temperature(b: &mut RuleSetBuilder<Dimension>) -> RustlingResult<()> {
+    b.rule_1("number as temp",
+             number_check!(),
+             |a| {
+                 Ok(TemperatureValue {
+                     value: a.value().value(),
+                     unit: None,
+                     latent: true,
+                 })
+             });
+    b.rule_2("<latent temp> degrees",
+             temperature_check!(|temp: &TemperatureValue| temp.latent),
+             b.reg(r#"(?:g?ch?[éeè]im(e(anna)?)?)|°"#)?,
+             |a, _| {
+                 Ok(TemperatureValue {
+                     value: a.value().value,
+                     unit: Some("degree"),
+                     latent: true,
+                 })
+             });
+    b.rule_2("<temp> Celcius",
+             temperature_check!(|temp: &TemperatureValue| temp.latent),
+             b.reg(r#"g?ch?(einteagr[áaà]d(ach)?|el[cs]?(?:ius)?)?\.?"#)?,
+             |a, _| {
+                 Ok(TemperatureValue {
+                     value: a.value().value,
+                     unit: Some("celsius"),
+                     latent: false,
+                 })
+             });
+    b.rule_2("<temp> Fahrenheit",
+             temperature_check!(|temp: &TemperatureValue| temp.latent),
+             b.reg(r#"f(?:ah?rh?eh?n(?:h?eit)?)?\.?"#)?,
+             |a, _| {
+                 Ok(TemperatureValue {
+                     value: a.value().value,
+                     unit: Some("fahrenheit"),
+                     latent: false,
+                 })
+             });
+    b.rule_2("<temp> Kelvin",
+             temperature_check!(),
+             b.reg(r#"k\.?|g?ch?eilvin"#)?,
+             |a, _| {
+                 Ok(TemperatureValue {
+                     value: a.value().value,
+                     unit: Some("kelvin"),
+                     latent: false,
+                 })
+             });
+    Ok(())
+}
