@@ -16,13 +16,16 @@ pub fn rules_numbers(b: &mut RuleSetBuilder<Dimension>) -> RustlingResult<()> {
              number_check!(),
              |a, b| helpers::compose_numbers(&a.value(), &b.value()));
     b.rule_1_terminal("integer (0..10)",
-                      b.reg(r#""(n[áaà]id|aon|dh[áaà]|tr[íiì]|ceithre|c[úuù]ig|seacht|s[éeè]|ocht|naoi|deich)"#)?,
+                      b.reg(r#""(?:a )?(n[áaà]id|(?:h|t-?)aon|dh[áaà]|tr[íiì]|ceithre|c[úuù]ig|seacht|s[éeè]|(?:h|t-?)ocht|naoi|deich)"#)?,
                       |text_match| {
                           let value = match text_match.group(1).as_ref() {
                               "náid" => 0,
                               "naid" => 0,
                               "nàid" => 0,
                               "aon" => 1,
+                              "haon" => 1,
+                              "t-aon" => 1,
+                              "taon" => 1,
                               "dhá" => 2,
                               "dha" => 2,
                               "dhà" => 2,
@@ -38,6 +41,9 @@ pub fn rules_numbers(b: &mut RuleSetBuilder<Dimension>) -> RustlingResult<()> {
                               "sè" => 6,
                               "seacht" => 7,
                               "ocht" => 8,
+                              "hocht" => 8,
+                              "tocht" => 8,
+                              "t-ocht" => 8,
                               "naoi" => 9,
                               "deich" => 10,
                               _ => return Err(RuleError::Invalid.into()),
@@ -56,19 +62,11 @@ pub fn rules_numbers(b: &mut RuleSetBuilder<Dimension>) -> RustlingResult<()> {
                       b.reg(r#"c[úuù]pla"#)?,
                       |_| IntegerValue::new_with_grain(2, 1)
     );
-    b.rule_1_terminal("some",
-                      b.reg(r#"[áaà]irithe"#)?,
-                      |_| IntegerValue::new_with_grain(3, 1)
-    );
-    b.rule_1_terminal("several",
-                      b.reg(r#"roinnt"#)?,
-                      |_| IntegerValue::new_with_grain(4, 1)
-    );
-    b.rule_1_terminal("bunch",
-                      b.reg(r#"a bunch of"#)?,
+    b.rule_1_terminal("teens",
+                      b.reg(r#"n?dh?[éeè]ag"#)?,
                       |_| IntegerValue::new_with_grain(10, 1)
     );
-    b.rule_1("few", b.reg(r#"(?:a )?few"#)?, |_| {
+    b.rule_1("few", b.reg(r#"roinnt|[áaà]irithe"#)?, |_| {
         Ok(IntegerValue {
             value: 3,
             grain: Some(1),
@@ -77,18 +75,25 @@ pub fn rules_numbers(b: &mut RuleSetBuilder<Dimension>) -> RustlingResult<()> {
         })
     });
     b.rule_1_terminal("integer (20..90)",
-                      b.reg(r#"(twenty|thirty|fou?rty|fifty|sixty|seventy|eighty|ninety)"#)?,
+                      b.reg(r#"(fiche|tr[íiì]ocha|daichead|caoga|seasca|seacht[óoò]|ocht[óoò]|n[óoò]cha)"#)?,
                       |text_match| {
                           let value = match text_match.group(1).as_ref() {
-                              "twenty" => 20,
-                              "thirty" => 30,
-                              "fourty" => 40,
-                              "forty" => 40,
-                              "fifty" => 50,
-                              "sixty" => 60,
-                              "seventy" => 70,
-                              "eighty" => 80,
-                              "ninety" => 90,
+                              "fiche" => 20,
+                              "tríocha" => 30,
+                              "triocha" => 30,
+                              "trìocha" => 30,
+                              "daichead" => 40,
+                              "caoga" => 50,
+                              "seasca" => 60,
+                              "seachtó" => 70,
+                              "seachto" => 70,
+                              "seachtò" => 70,
+                              "ochtó" => 80,
+                              "ochto" => 80,
+                              "ochtò" => 80,
+                              "nócha" => 90,
+                              "nocha" => 90,
+                              "nòcha" => 90,
                               _ => return Err(RuleError::Invalid.into()),
                           };
                           IntegerValue::new_with_grain(value, 1)
@@ -140,9 +145,9 @@ pub fn rules_numbers(b: &mut RuleSetBuilder<Dimension>) -> RustlingResult<()> {
              |integer, text_match| {
                  let (value, grain) = match text_match.group(1).as_ref() {
                      "hundred" => (100, 2),
-                     "thousand" => (1_000, 3),
-                     "million" => (1_000_000, 6),
-                     "billion" => (1_000_000_000, 9),
+                     "mile" => (1_000, 3),
+                     "mill?i[úuù]n" => (1_000_000, 6),
+                     "bill?i[úuù]n" => (1_000_000_000, 9),
                      _ => return Err(RuleError::Invalid.into()),
                  };
                  IntegerValue::new_with_grain(integer.value().value * value, grain)
@@ -428,13 +433,13 @@ pub fn rules_numbers(b: &mut RuleSetBuilder<Dimension>) -> RustlingResult<()> {
              }
     );
     b.rule_1_terminal("ordinal (digits)",
-                      b.reg(r#"0*(\d+) ?(st|nd|rd|th)"#)?,
+                      b.reg(r#"0*(\d+) ?(st|nd|rd|th|adh|a|d|ú|u)"#)?,
                       |text_match| {
                           let value: i64 = text_match.group(1).parse()?;
                           Ok(OrdinalValue::new(value))
                       });
     b.rule_2("the <ordinal>",
-             b.reg(r#"the"#)?,
+             b.reg(r#"an"#)?,
              ordinal_check!(),
              |_, ordinal| Ok((*ordinal.value()).prefixed()));
     Ok(())
