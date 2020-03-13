@@ -38,7 +38,7 @@ pub fn rules_celebration(b: &mut RuleSetBuilder<Dimension>) -> RustlingResult<()
                           .form(Form::Celebration))
     );
     b.rule_1_terminal("valentine's day",
-                      b.reg(r#"l[áaà] (?:fh[éeè]ile |san |[’']le )?vailint[íiì]n"#)?,
+                      b.reg(r#"l[áaà] (?:fh[éeè]ile |san |[’']?le )?vailint[íiì]n"#)?,
                       |_| Ok(helpers::month_day(2, 14)?
                           .form(Form::Celebration))
     );
@@ -102,12 +102,12 @@ pub fn rules_celebration(b: &mut RuleSetBuilder<Dimension>) -> RustlingResult<()
                               .form(Form::Celebration))
     );
     b.rule_1_terminal("St Patrick's Day",
-                      b.reg(r#"l[áaà] (?:fh[éeè]ile |[’']le )?ph?[áaà]draig"#)?,
+                      b.reg(r#"l[áaà] (?:fh[éeè]ile |[’']?le )?ph?[áaà]draig"#)?,
                       |_| Ok(helpers::month_day(3, 17)?
                           .form(Form::Celebration))
     );
     b.rule_1_terminal("St Bridget's Day",
-                      b.reg(r#"l[áaà] (?:fh[éeè]ile |[’']le )?bhr[íiì]de"#)?,
+                      b.reg(r#"l[áaà] (?:fh[éeè]ile |[’']?le )?bhr[íiì]de"#)?,
                       |_| Ok(helpers::month_day(2, 1)?
                           .form(Form::Celebration))
     );
