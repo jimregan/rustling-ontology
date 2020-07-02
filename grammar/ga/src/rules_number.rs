@@ -835,7 +835,7 @@ pub fn rules_numbers(b: &mut RuleSetBuilder<Dimension>) -> RustlingResult<()> {
              }
     );
     b.rule_1_terminal("ordinal (digits)",
-                      b.reg(r#"0*(\d+) ?(st|nd|rd|th|adh|a|d|ú|u)"#)?,
+                      b.reg(r#"0*(\d+) ?(st|nd|rd|th|adh|a|d|ú|u|ù)"#)?,
                       |text_match| {
                           let value: i64 = text_match.group(1).parse()?;
                           Ok(OrdinalValue::new(value))

@@ -171,7 +171,7 @@ pub fn rules_datetime(b: &mut RuleSetBuilder<Dimension>) -> RustlingResult<()> {
              |ordinal, _, datetime| helpers::cycle_nth_after(Grain::Quarter, ordinal.value().value - 1, datetime.value())
     );
     b.rule_2("Q1-4 <year>",
-             b.reg(r#"q ?([1234]|one|two|three|four)"#)?,
+             b.reg(r#"r([áaà]ithe|\.) ?([1234]|a (haon|d[óoò]|tr[íiì]|ceathair))"#)?,
              datetime_check!(form!(Form::Year(_))),
              |q, year| {
                  let n = match q.group(1).as_ref() {
