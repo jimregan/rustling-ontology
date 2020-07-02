@@ -2,7 +2,7 @@
 name = "rustling-ontology-ga"
 version = "0.19.3"
 authors = ["Jim O'Regan <jaoregan@tcd.ie>"]
-edition = "2020"
+edition = "2018"
 
 [dependencies]
 rustling = { git = "https://github.com/snipsco/rustling", tag = "0.9.1" }
