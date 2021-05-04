@@ -442,18 +442,9 @@ pub fn rules_datetime(b: &mut RuleSetBuilder<Dimension>) -> RustlingResult<()> {
                  helpers::month_day(m, integer.value().value as u32)
              }
     );
-    b.rule_3("<named-month> the <day-of-month> (non ordinal)",
-             datetime_check!(form!(Form::Month(_))),
-             b.reg(r#"the"#)?,
-             integer_check_by_range!(1, 31),
-             |month, _, integer| {
-                 let m = month.value().form_month()?;
-                 helpers::month_day(m, integer.value().value as u32)
-             }
-    );
     b.rule_3("<day-of-month> (ordinal) of <named-month>",
              ordinal_check!(|ordinal: &OrdinalValue| 1 <= ordinal.value && ordinal.value <= 31),
-             b.reg(r#"of|in"#)?,
+             b.reg(r#"de"#)?,
              datetime_check!(form!(Form::Month(_))),
              |ordinal, _, month| {
                  let m = month.value().form_month()?;
@@ -462,7 +453,7 @@ pub fn rules_datetime(b: &mut RuleSetBuilder<Dimension>) -> RustlingResult<()> {
     );
     b.rule_3("<day-of-month> (non ordinal) of <named-month>",
              integer_check_by_range!(1, 31),
-             b.reg(r#"of|in"#)?,
+             b.reg(r#"de"#)?,
              datetime_check!(form!(Form::Month(_))),
              |integer, _, month| {
                  let m = month.value().form_month()?;
@@ -1224,32 +1215,27 @@ pub fn rules_datetime(b: &mut RuleSetBuilder<Dimension>) -> RustlingResult<()> {
 pub fn rules_datetime_with_duration(b: &mut RuleSetBuilder<Dimension>) -> RustlingResult<()> {
 
     b.rule_2("in <duration>",
-             b.reg(r#"in"#)?,
-             duration_check!(),
-             |_, duration| duration.value().in_present()
-    );
-    b.rule_3("in <duration> from now",
-             b.reg(r#"in"#)?,
-             duration_check!(),
-             b.reg(r#"from now"#)?,
-             |_, duration, _| duration.value().in_present()
-    );
-    b.rule_3("in <duration>",
              b.reg(r#"i gceann"#)?,
              duration_check!(),
+             |_, duration, _| duration.value().in_present()
+    );
+    b.rule_3("in <duration> from now",
+             b.reg(r#"i gceann"#)?,
+             duration_check!(),
+             b.reg(r#"as seo"#)?,
              |_, duration, _| duration.value().in_present()
     );
 
     // TODO: split date/time period
     b.rule_2("within <duration>",
-             b.reg(r#"within"#)?,
+             b.reg(r#"laistigh de"#)?,
              duration_check!(),
              |_, a| helpers::cycle_nth(Grain::Second, 0)?.span_to(&a.value().in_present()?, false)
     );
 
     b.rule_2("<duration> from now/today",
              duration_check!(),
-             b.reg(r#"[óoò](n l[áaà] )?inniu|[óoò]n l[áaà] at[áaà] inniu ann|as seo amach"#)?,
+             b.reg(r#"[óoò](n l[áaà] )?inniu(bh)?|[óoò]n l[áaà] at[áaà] inniu(bh)? ann|as seo( amach)?"#)?,
              |a, _| {
                  a.value().in_present()
              }
@@ -1257,9 +1243,9 @@ pub fn rules_datetime_with_duration(b: &mut RuleSetBuilder<Dimension>) -> Rustli
 
     // FIXME: This is not very clear
     b.rule_3("for <duration> from now/today",
-             b.reg(r#"for"#)?,
+             b.reg(r#"ar feadh"#)?,
              duration_check!(),
-             b.reg(r#"from (today|now)"#)?,
+             b.reg(r#"[óoò](n l[áaà] )?inniu(bh)?|[óoò]n l[áaà] at[áaà] inniu(bh)? ann|as seo( amach)?"#)?,
              |_, duration, grain| {
                  let start = helpers::cycle_nth(Grain::Second, 0)?;
                  let mut end = duration.value().in_present()?;
@@ -1293,7 +1279,7 @@ pub fn rules_datetime_with_duration(b: &mut RuleSetBuilder<Dimension>) -> Rustli
 
     b.rule_3("<duration> before <datetime>",
              duration_check!(),
-             b.reg(r#"roimhe?"#)?,
+             b.reg(r#"roimh?e?"#)?,
              datetime_check!(),
              |duration, _, datetime| duration.value().before(datetime.value())
     );
@@ -1321,19 +1307,35 @@ pub fn rules_datetime_with_cycle(b: &mut RuleSetBuilder<Dimension>) -> RustlingR
              |_, a| helpers::cycle_nth(a.value().grain, 1)
     );
 
-    b.rule_4("last <day-of-week> of <datetime>",
-             b.reg(r#"(?:the )?last"#)?,
+    b.rule_4("the last <day-of-week> of <datetime>",
+             b.reg(r#"an|na"#)?,
              datetime_check!(form!(Form::DayOfWeek{..})),
-             b.reg(r#"of"#)?,
+             b.reg(r#"dh?eireanach (de|i|sa)"#)?,
              datetime_check!(),
              |_, a, _, b| {
                  a.value().last_of(b.value())
              }
     );
-    b.rule_4("last <cycle> of <datetime>",
-             b.reg(r#"(?:the )?last"#)?,
+    b.rule_3("last <day-of-week> of <datetime>",
+             datetime_check!(form!(Form::DayOfWeek{..})),
+             b.reg(r#"dh?eireanach (de|i|sa)"#)?,
+             datetime_check!(),
+             |_, a, _, b| {
+                 a.value().last_of(b.value())
+             }
+    );
+    b.rule_4("the last <cycle> of <datetime>",
+             b.reg(r#"an|na"#)?,
              cycle_check!(),
-             b.reg(r#"of|in"#)?,
+             b.reg(r#"dh?eireanach (de|i|sa)"#)?,
+             datetime_check!(),
+             |_, cycle, _, datetime| {
+                 cycle.value().last_of(datetime.value())
+             }
+    );
+    b.rule_3("<cycle> of <datetime>",
+             cycle_check!(),
+             b.reg(r#"dh?eireanach (de|i|sa)"#)?,
              datetime_check!(),
              |_, cycle, _, datetime| {
                  cycle.value().last_of(datetime.value())
@@ -1342,17 +1344,17 @@ pub fn rules_datetime_with_cycle(b: &mut RuleSetBuilder<Dimension>) -> RustlingR
     b.rule_4("nth <datetime> of <datetime>",
              ordinal_check!(), // the first
              datetime_check!(), // Thursday
-             b.reg(r#"of|in"#)?, // of
+             b.reg(r#"de|i|sa"#)?, // of
              datetime_check!(), // march
              |ordinal, a, _, b| {
                  b.value().intersect(a.value())?.the_nth(ordinal.value().value - 1)
              }
     );
     b.rule_5("nth <datetime> of <datetime>",
-             b.reg(r#"the"#)?,
+             b.reg(r#"an"#)?,
              ordinal_check!(),
              datetime_check!(),
-             b.reg(r#"of|in"#)?,
+             b.reg(r#"de|i|sa"#)?,
              datetime_check!(),
              |_, ordinal, a, _, b| {
                  b.value().intersect(a.value())?.the_nth(ordinal.value().value - 1)
@@ -1361,45 +1363,45 @@ pub fn rules_datetime_with_cycle(b: &mut RuleSetBuilder<Dimension>) -> RustlingR
     b.rule_4("nth <datetime> after <datetime>",
              ordinal_check!(),
              datetime_check!(),
-             b.reg(r#"after"#)?,
+             b.reg(r#"(i ndiaidh|tar [éeè]is)"#)?,
              datetime_check!(),
              |ordinal, a, _, b| {
                  a.value().the_nth_after(ordinal.value().value - 1, b.value())
              }
     );
     b.rule_5("nth <datetime> after <datetime>",
-             b.reg(r#"the"#)?,
+             b.reg(r#"an"#)?,
              ordinal_check!(),
              datetime_check!(),
-             b.reg(r#"after"#)?,
+             b.reg(r#"(i ndiaidh|tar [éeè]is)"#)?,
              datetime_check!(),
              |_, ordinal, a, _, b| {
                  a.value().the_nth_after(ordinal.value().value - 1, b.value())
              }
     );
     b.rule_4("the <cycle> after <datetime>",
-             b.reg(r#"the"#)?,
+             b.reg(r#"an"#)?,
              cycle_check!(),
-             b.reg(r#"after"#)?,
+             b.reg(r#"(i ndiaidh|tar [éeè]is)"#)?,
              datetime_check!(),
              |_, cycle, _, datetime| helpers::cycle_nth_after(cycle.value().grain, 1, datetime.value())
     );
     b.rule_3("<cycle> after <datetime>",
              cycle_check!(),
-             b.reg(r#"after"#)?,
+             b.reg(r#"(i ndiaidh|tar [éeè]is)"#)?,
              datetime_check!(),
              |cycle, _, datetime| helpers::cycle_nth_after(cycle.value().grain, 1, datetime.value())
     );
     b.rule_4("the <cycle> before <datetime>",
-             b.reg(r#"the"#)?,
+             b.reg(r#"an"#)?,
              cycle_check!(),
-             b.reg(r#"before"#)?,
+             b.reg(r#"roimh?e?"#)?,
              datetime_check!(),
              |_, cycle, _, datetime| helpers::cycle_nth_after(cycle.value().grain, -1, datetime.value())
     );
     b.rule_3("<cycle> before <datetime>",
              cycle_check!(),
-             b.reg(r#"before"#)?,
+             b.reg(r#"roimh?e?"#)?,
              datetime_check!(),
              |cycle, _, datetime| helpers::cycle_nth_after(cycle.value().grain, -1, datetime.value())
     );
@@ -1420,22 +1422,22 @@ pub fn rules_datetime_with_cycle(b: &mut RuleSetBuilder<Dimension>) -> RustlingR
     b.rule_4("<ordinal> <cycle> of <datetime>",
              ordinal_check_by_range!(1, 9999),
              cycle_check!(),
-             b.reg(r#"of|in|from"#)?,
+             b.reg(r#"de|i"#)?,
              datetime_check!(),
              |ordinal, cycle, _, datetime| helpers::cycle_nth_after_not_immediate(cycle.value().grain, ordinal.value().value - 1, datetime.value())
     );
     b.rule_5("the <ordinal> <cycle> of <datetime>",
-             b.reg(r#"the"#)?,
+             b.reg(r#"an"#)?,
              ordinal_check_by_range!(1, 9999),
              cycle_check!(),
-             b.reg(r#"of|in|from"#)?,
+             b.reg(r#"de|i"#)?,
              datetime_check!(),
              |_, ordinal, cycle, _, datetime| helpers::cycle_nth_after_not_immediate(cycle.value().grain, ordinal.value().value - 1, datetime.value())
     );
     b.rule_4("the <cycle> of <datetime>",
-             b.reg(r#"the"#)?,
+             b.reg(r#"an"#)?,
              cycle_check!(),
-             b.reg(r#"of"#)?,
+             b.reg(r#"de"#)?,
              datetime_check!(),
              |_, cycle, _, datetime| helpers::cycle_nth_after_not_immediate(cycle.value().grain, 0, datetime.value())
     );

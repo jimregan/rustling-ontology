@@ -19,6 +19,7 @@ members=[
     "grammar/ko",
     "grammar/pt",
     "grammar/zh",
+    "grammar/ga",
     "json-utils",
     "moment",
     "values",
