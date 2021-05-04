@@ -743,7 +743,7 @@ pub fn rules_datetime(b: &mut RuleSetBuilder<Dimension>) -> RustlingResult<()> {
     /* DATETIME - TIME - PARTS OF DAY */
 
     b.rule_1_terminal("now",
-                      b.reg(r#"(anois|ag an (t-?)?am seo)"#)?,
+                      b.reg(r#"(anois d[íiì]reach|anois|ag an (t-?)?am seo|faoi l[áaà]thair|a[rg] an aimsir seo|i l[áaà]thair na huaire|l[áaà]ithreach)"#)?,
                       |_| helpers::cycle_nth(Grain::Second, 0)
     );
 

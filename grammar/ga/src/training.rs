@@ -4,9 +4,8 @@ use rustling_ontology_values::dimension::*;
 use rustling_ontology_values::ResolverContext;
 
 pub fn examples_percentage(v: &mut Vec<::rustling::train::Example<Dimension>>) {
-    example!(v, check_percentage(0.3), "0.3%", "zero point three per cent");
-    example!(v, check_percentage(15.0), "15%", "15 %", "+15%", "fifteen percent");
-    example!(v, check_percentage(202.0), "202%", "202 p.c.", "202percent");
+    example!(v, check_percentage(0.3), "0.3%", "a náid pointe a trí faoin gcéad");
+    example!(v, check_percentage(15.0), "15%", "15 %", "+15%", "cúig déag faoin gcéad");
 }
 
 pub fn examples_temperature(v: &mut Vec<::rustling::train::Example<Dimension>>) {
@@ -48,10 +47,10 @@ pub fn examples_finance(v: &mut Vec<::rustling::train::Example<Dimension>>) {
 // TODO: Sort out and split by datetime subtype
 pub fn examples_datetime(v: &mut Vec<::rustling::train::Example<Dimension>>) {
     let c = ResolverContext::new(Interval::starting_at(Moment(Local.ymd(2013, 2, 12).and_hms(4, 30, 0)), Grain::Second));
-    example!(v, check_moment!(c, [2013, 2, 12, 4, 30, 0]), "now", "right now", "just now", "at this time");
-    example!(v, check_moment!(c, [2013, 2, 12]), "today");
-    example!(v, check_moment!(c, [2013, 2, 11]), "yesterday");
-    example!(v, check_moment!(c, [2013, 2, 13]), "tomorrow");
+    example!(v, check_moment!(c, [2013, 2, 12, 4, 30, 0]), "anois", "anois díreach", "faoi láthair", "ar an aimsir seo");
+    example!(v, check_moment!(c, [2013, 2, 12]), "inniu");
+    example!(v, check_moment!(c, [2013, 2, 11]), "inné");
+    example!(v, check_moment!(c, [2013, 2, 13]), "amárach");
     example!(v, check_moment!(c, [2013, 2, 18]), "monday", "mon.", "this monday");
     example!(v, check_moment!(c, [2013, 2, 18]), "Monday, Feb 18", "Mon, February 18");
     example!(v, check_moment!(c, [2013, 2, 19]), "tuesday", "Tuesday the 19th", "Tuesday 19th");
